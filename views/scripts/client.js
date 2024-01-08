@@ -1,7 +1,8 @@
-
 $(document).ready(function () {
     $('.materialboxed').materialbox();
     $('.modal').modal();
+
+    const socket = io();
 
     const addCards = (items) => {
         const cardsContainer = $("#cardsContainer");
@@ -24,7 +25,7 @@ $(document).ready(function () {
             </div>`;
             cardsContainer.append(itemToAppend);
         });
-    }
+    };
 
     const cardList = [
         {
@@ -40,9 +41,8 @@ $(document).ready(function () {
             description: "Demo description about kitten 2"
         }
     ];
-
     addCards(cardList);
-    
+
     const formSubmitted = () => {
         let formData = {
             first_name: $('#first_name').val(),
@@ -51,28 +51,41 @@ $(document).ready(function () {
             message: $('#message').val()
         };
 
-        console.log(formData); 
-        
-        // AJAX call to submit form data
+        console.log(formData);
         $.ajax({
             type: 'POST',
-            url: '/submit-form', 
+            url: '/submit-form',
             data: formData,
-            success: function(response) {
-                console.log(response);
+            success: function (response) {
+                console.log('Form submitted successfully:', response);
+                socket.emit('formData', formData);
             },
-            error: function(error) {
-                console.error(error);
+            error: function (error) {
+                console.error('Error submitting form:', error);
             }
         });
-    }
+    };
 
     $('#driverForm').submit((event) => {
-        event.preventDefault(); 
-        formSubmitted(); 
+        event.preventDefault();
+        formSubmitted();
     });
 
     $('#clickMeButton').click(() => {
-        alert("Thanks for clicking me. Hope you have a nice day!")
+        alert("Thanks for clicking me. Hope you have a nice day!");
+    });
+
+    
+    socket.on('connect', () => {
+        console.log('Connected to server');
+    });
+
+    socket.on('formDataResponse', (response) => {
+        console.log('Received response from server:', response);
+
+    });
+
+    socket.on('number', (msg) => {
+        console.log('Random number: ' + msg);
     });
 });
